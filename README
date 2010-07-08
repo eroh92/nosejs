@@ -6,6 +6,8 @@ NoseJS is a `Nose`_ plugin for integrating JavaScript tests into a Python test s
 
 .. contents::
 
+This projected has been forked from the NoseJS on BitBucket at http://bitbucket.org/kumar303/nosejs
+
 Overview
 ========
 
@@ -18,14 +20,6 @@ Install
 =======
 
 There are some optional external dependencies in the sections below.
-
-You can get NoseJS with `easy_install <http://peak.telecommunity.com/DevCenter/EasyInstall>`_ ::
-    
-    $ easy_install NoseJS
-
-Or you can clone the source using `Mercurial <http://www.selenic.com/mercurial/wiki/index.cgi/Mercurial>`_ from http://bitbucket.org/kumar303/nosejs/ and install it with ::
-    
-    $ python setup.py develop
 
 Checking JavaScript Syntax
 ==========================
