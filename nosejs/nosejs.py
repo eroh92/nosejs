@@ -29,7 +29,7 @@ class RhinoJavaScriptTester(JavaScriptTester):
     def __init__(self, stream, config):
         super(RhinoJavaScriptTester, self).__init__(stream, config)
         
-        cmd = [config.java_bin, '-jar', config.rhino_jar] 
+        cmd = [config.java_bin, '-jar', config.rhino_jar, '-opt', '-1']
         if config.rhino_jar_debug:
             cmd.append('-debug')
         
