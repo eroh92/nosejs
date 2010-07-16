@@ -37,7 +37,7 @@ To disable lint checking, add ``--no-javascript-lint``
 
 # Running JavaScript Tests
 
-NoseJS will also find and run JavaScript test files, those that match Nose's test pattern and end in ``.js``.  Currently, NoseJS supports running executing tests in `Rhino`_, a Java implementation of the JavaScript language.  There is experimental support for `python-spidermonkey <http://github.com/davisp/python-spidermonkey/tree/master>`_ using the ``--spidermonkey`` switch.
+NoseJS will also find and run JavaScript test files, those that match Nose's test pattern and end in ``.js``.  Currently, NoseJS supports running executing tests in [Rhino](http://www.mozilla.org/rhino/), a Java implementation of the JavaScript language.
 
 ## Usage
 
@@ -126,14 +126,14 @@ All JavaScripts have the ``nosejs`` JavaScript namespace available for use.  The
   
   - Require a JavaScript file that is bundled with NoseJS.  There are a few available resources:
     
-    jquery-1.4.2.js
-        Will load the [jQuery](http://jquery.com/) library before loading any other tests
+    - jquery-1.4.2.js
+      - Will load the [jQuery](http://jquery.com/) library before loading any other tests
 
-    jquery/qunit-testrunner.js
-        Will load a very minimal set of JavaScript functions for testing.  It is a partial implementation of the [QUnit test runner](http://docs.jquery.com/QUnit) interface.  
-        Supported methods: module(), test(), equals(), ok(), and expect()
+    - jquery/qunit-testrunner.js
+      - Will load a very minimal set of JavaScript functions for testing.  It is a partial implementation of the [QUnit test runner](http://docs.jquery.com/QUnit) interface.  
+      - Supported methods: `module()`, `test()`, `equals()`, `ok()`, and `expect()`
     
-    For example, test_fudge.js uses jquery and the testrunner ::
+    - For example, test_fudge.js uses jquery and the testrunner ::
     
         if (typeof nosejs !== 'undefined') {
             nosejs.requireResource("jquery-1.3.1.js");
@@ -152,11 +152,6 @@ This will load a copy of [env.js](http://github.com/thatcher/env-js) to simulate
 ## Wait ... Python *and* Java?
 
 [Rhino](http://www.mozilla.org/rhino/) is pretty much the only stable, command line oriented implementation of JavaScript I know of and it's well supported by Mozilla.  
-
-Alternatively, John J. Lee created a Python binding to the fast [Spider Monkey engine]
-(http://www.mozilla.org/js/spidermonkey/), Atul Varma revived it once in a fork on [Google Code] (http://code.google.com/p/python-spidermonkey/), and now Paul J. Davis is working on it (in [git] (http://github.com/davisp/python-spidermonkey/tree/master) and it is released on [PyPI] (http://pypi.python.org/pypi/python-spidermonkey).  
-
-There is current experimental support for Python Spidermonkey in NoseJS using the ``--spidermonkey`` option, which switches out the JavaScript engine.
 
 # Changelog
 
@@ -196,6 +191,6 @@ There is current experimental support for Python Spidermonkey in NoseJS using th
 
 # To Do
 
-- Better spidermonkey support
+- Add spidermonkey support
 - Distribute a Rhino js.jar with NoseJS
-- Upgrade env.js using git repo
+- Simplify command line inputs
