@@ -2,11 +2,13 @@
 import os
 import sys
 import subprocess
+import unittest
 from nose.plugins.base import Plugin
 from nose.config import ConfigError
 import logging
 import java
 from lint import JsLintTestCase
+
 
 log = logging.getLogger('nose.plugins.nosejs')
 
@@ -15,154 +17,90 @@ resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
 def get_resource(filename):
     return os.path.join(resource_dir, filename)
 
-class JavaScriptTester(object):
-    
-    def __init__(self, stream, config):
-        self.stream = stream
-        self.config = config
-    
-    def load_files(self, files):
-        raise NotImplementedError("runs each listed JavaScript file")
+class JavascriptError(Exception):
+    pass
 
-class RhinoJavaScriptTester(JavaScriptTester):
+class RhinoJavaScriptTestCase(unittest.TestCase):
     
-    def __init__(self, stream, config):
-        super(RhinoJavaScriptTester, self).__init__(stream, config)
+    def __init__(self, filename, options, config):
+        unittest.TestCase.__init__(self)
+        self.filename = filename
         
-        cmd = [config.java_bin, '-jar', config.rhino_jar, '-opt', '-1']
-        if config.rhino_jar_debug:
+        cmd = [options.java_bin,
+               '-jar',
+               options.rhino_jar,
+               '-opt',
+               '-1']
+
+        if options.rhino_jar_debug:
             cmd.append('-debug')
-        
-        self.base_cmd = cmd
-    
-    def load_files(self, files):
-        cmd = [c for c in self.base_cmd]
-        cmd.extend(files)
 
+        cmd.append(options.rhino_testrunner)
+        cmd = cmd + options.javascript_libs_to_load
+        cmd.append(filename)
+
+        self.options = options
+        self.config = config
+        self.cmd = cmd
+
+    def runTest(self):
+        cmd = self.cmd
         log.debug("command to run is: \n  %s\n" % "\n    ".join(cmd))
         p = subprocess.Popen(
             cmd, env={'PATH':os.environ.get('PATH',None)},
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            cwd=self.config.nosejs_work_dir
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
-        self.stream.write(p.stdout.read())
-        returncode = p.wait()
-        print >> self.stream, ""
-        if returncode != 0:
-            # fixme: need to tell nose to exit non-zero
-            print >> self.stream, "FAIL"
-        else:
-            print >> self.stream, "OK"
 
-class RhinoContext(object):
-    """creates top level methods in spidermonkey compatible with Rhino shell.
-    
-    See http://www.mozilla.org/rhino/
-    """
-    
-    def __init__(self, stream=sys.stdout):
-        from spidermonkey import Runtime
-        rt = Runtime()
-        self.ctx = rt.new_context()
-        self.stream = stream
-        self.ctx.bind_callable("help", self.help)
-        self.ctx.bind_callable("defineClass", self.defineClass)
-        self.ctx.bind_callable("deserialize", self.deserialize)
-        self.ctx.bind_callable("load", self.load)
-        self.ctx.bind_callable("loadClass", self.loadClass)
-        self.ctx.bind_callable("load", self.load)
-        self.ctx.bind_callable("print", self.print_)
-        self.ctx.bind_callable("readFile", self.readFile)
-        self.ctx.bind_callable("readUrl", self.readUrl)
-        self.ctx.bind_callable("runCommand", self.runCommand)
-        
-        # this is for java.io.File() to work (see __nosejs__.js)
-        self.ctx.bind_class(java._SM_JavaFile, bind_constructor=True)
-    
-    def help(self):
-        raise NotImplementedError()
-    
-    def defineClass(self, class_name):
-        raise NotImplementedError()
-    
-    def deserialize(self, filename):
-        raise NotImplementedError()
-    
-    def load(self, *files):
-        raise NotImplementedError()
-        
-    def loadClass(self, class_name):
-        raise NotImplementedError()
-        
-    def load(self, *files):
-        for file in files:
-            log.debug("Spidermonkey is going to read and eval %s" % file)
-            f = open(file,'r')
-            # fixme: optimize with mmap and a regex for `;'
-            self.ctx.eval_script(f.read())
-            f.close()
-    
-    def print_(self, *messages):
-        for msg in messages:
-            # fixme: add spaces between multiple messages?
-            if isinstance(msg, unicode):
-                msg = msg.encode('utf-8')
-            self.stream.write(msg)
-        self.stream.write("\n")
-        
-    def readFile(self, file, encoding='utf-8'):
-        raise NotImplementedError()
-        
-    def readUrl(self, url, encoding='utf-8'):
-        raise NotImplementedError()
-        
-    def runCommand(self, cmd_name, *args_options):
-        raise NotImplementedError()
+        output = p.stdout.read();
 
-class SpidermonkeyJavaScriptTester(JavaScriptTester):
+        log.debug(output)
+
+        if output.find('TEST FAILED') >= 0:
+            raise self.failureException('Failed javascript test for file: %s\n'
+                                        'Output:\n%s' % (self.filename,
+                                                         output))
+        elif output.find('exception') >= 0:
+            raise JavascriptError('Error in javascript test for file: %s\n'
+                                  'Output:\n%s' % (self.filename,
+                                                   output))
     
-    def __init__(self, stream, config):
-        super(SpidermonkeyJavaScriptTester, self).__init__(stream, config)
-        self.rhino = RhinoContext(stream=stream)
-    
-    def load_files(self, files):
-        """run a command line JavaScript program.
-        
-        This should behave just like the Rhino counterpart, 
-        which is pretty much:
-        
-        java -jar Rhino/js.jar main.js file1.js file2.js ...
-        
-        In other words, the first file we get is main.js and 
-        each subsequent file will be loaded by main.js
-        """
-        if len(files) < 2:
-            raise ValueError(
-                "files %s should contain at least a main program (i.e. main.js) "
-                "and one other JavaScript to execite")
-        class main:
-            arguments = files[1:]
-        m = main()
-        # set arguments like how Rhino does:
-        self.rhino.ctx.bind_attribute("arguments", m, "arguments")
-        # execute the first script as if it is a command line program:
-        self.rhino.load(files[0])
+#    def load_files(self, files):
+#        cmd = [c for c in self.base_cmd]
+#
+#        print >> self.stream, files
+#
+#        cmd.extend(files)
+#
+#        log.debug("command to run is: \n  %s\n" % "\n    ".join(cmd))
+#        p = subprocess.Popen(
+#            cmd, env={'PATH':os.environ.get('PATH',None)},
+#            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+#        )
+#        self.stream.write(p.stdout.read())
+#        returncode = p.wait()
+#        print >> self.stream, ""
+#        if returncode != 0:
+#            # fixme: need to tell nose to exit non-zero
+#            print >> self.stream, "FAIL"
+#        else:
+#            print >> self.stream, "OK"
 
 class NoseJS(Plugin):
     """Finds JavaScript files to run tests and check for lint."""
     name = 'javascript'
-    
+    log.debug('in')
     def options(self, parser, env=os.environ):
         Plugin.options(self, parser, env)
         parser.add_option('--with-javascript-only', dest="javascript_only", 
                             action="store_true", help=(
-            "Activates the NoseJS plugin and prevents Nose from running any other tests.  "
-            "Implies --with-javascript."
+            "Activates the NoseJS plugin and prevents Nose from running any "
+            "other tests. Implies --with-javascript."
         ))
         parser.add_option('--no-javascript-tests', dest="run_javascript_tests", 
                             default=True, action="store_false", help=(
-            "Disables default behavior of looking for JavaScript test files and "
-            "loading them if they match nose's testMatch (i.e. [tT]est.*\.js)"
+            "Disables default behavior of looking for JavaScript test files"
+            "and loading them if they match nose's testMatch "
+            "(i.e. [tT]est.*\.js)"
         ))
         parser.add_option('--no-javascript-lint', dest="run_javascript_lint", 
                             default=True, action="store_false", help=(
@@ -231,9 +169,6 @@ class NoseJS(Plugin):
             "executed as java -jar rhino1_7R1/js.jar RHINO_TESTRUNNER <discovered_test_file>.  "
             "Default: %default"
         ))
-        parser.add_option('--nosejs-work-dir', help=(
-            "A path to change into before running any commands"
-        ))
 
     def configure(self, options, config):
         Plugin.configure(self, options, config)
@@ -294,9 +229,7 @@ class NoseJS(Plugin):
                 "--no-javascript-lint" % (os.environ.get('PATH','')))
     
     def _configureJsTesters(self, options, config):
-        wd = options.nosejs_work_dir
-        if not wd:
-            wd = os.getcwd()
+        wd = os.getcwd()
             
         if not options.spidermonkey: 
             if not options.rhino_jar:
@@ -317,6 +250,8 @@ class NoseJS(Plugin):
             for resource in options.resources_to_load:
                 libs.append(get_resource(resource))
         libs.extend(options.javascript_libs_to_load)
+        libs.append(get_resource('env.rhino.js'))
+        libs.append(get_resource('qunit-testrunner.js'))
         options.javascript_libs_to_load = libs
         
         # explode --javascript-dir values into incremental paths
@@ -331,16 +266,22 @@ class NoseJS(Plugin):
         
     
     def loadTestsFromFile(self, filename):
-        """yield all test cases in a file or if there are none, yield False."""
+        """Load lint tests and qunit tests from js files
+
+        """
         log.debug("nosejs is loading tests from: %s" % filename)
-        
-        if not self.options.run_javascript_lint:
+        has_tests = False
+        if self.options.run_javascript_lint:
+            has_tests = True
+            yield JsLintTestCase(filename, self.options.jsl_bin,
+                                        jsl_options=self.options.jsl_opt,
+                                        stop_on_error=self.config.stopOnError)
+
+        if filename.find('test_') >= 0:
+            yield RhinoJavaScriptTestCase(filename, self.options, self.config)
+
+        if not has_tests:
             yield False
-            return
-        else:
-            yield JsLintTestCase(filename, self.options.jsl_bin, 
-                                    jsl_options=self.options.jsl_opt,
-                                    stop_on_error=self.config.stopOnError)
     
     def wantDirectory(self, dirpath):
         want_dir = dirpath in self.javascript_dirs
@@ -372,19 +313,19 @@ class NoseJS(Plugin):
                 
         return found_some
         
-    def report(self, stream):
-        
-        if self.options.run_javascript_tests:
-            print >> stream, "----------------------------------------------------------------------"
-        
-            if self.options.spidermonkey:
-                js_test = SpidermonkeyJavaScriptTester(stream, self.options)
-            else:
-                js_test = RhinoJavaScriptTester(stream, self.options)
-            
-            files = [self.options.rhino_testrunner] # the main program
-            for js_lib in self.options.javascript_libs_to_load:
-                files.append(js_lib)
-            files.extend(self.files)
-            js_test.load_files(files)
+#    def report(self, stream):
+#
+#        if self.options.run_javascript_tests:
+#            print >> stream, "-" * 70
+#
+#            if self.options.spidermonkey:
+#                js_test = SpidermonkeyJavaScriptTester(stream, self.options)
+#            else:
+#                js_test = RhinoJavaScriptTester(stream, self.options)
+#
+#            files = [self.options.rhino_testrunner] # the main program
+#            for js_lib in self.options.javascript_libs_to_load:
+#                files.append(js_lib)
+#            files.extend(self.files)
+#            js_test.load_files(files)
             

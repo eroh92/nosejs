@@ -8,7 +8,7 @@ if (typeof nosejs === 'undefined') {
 nosejs.AssertionError = function(msg) {
     Error.call(this, msg);
     this.name = "AssertionError";
-    this.message = msg;
+    this.message = "TEST FAILED: " + msg;
 }
 nosejs.AssertionError.prototype.toString = function() { return this.message; }
 
