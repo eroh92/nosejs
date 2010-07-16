@@ -1,35 +1,34 @@
 
-NoseJS is a `Nose`_ plugin for integrating JavaScript tests into a Python test suite.
+# NoseJS
+> Version 0.9.5 (unreleased)
 
-.. _Nose: http://www.somethingaboutorange.com/mrl/projects/nose/
-.. _Rhino: http://www.mozilla.org/rhino/
+# What
 
-.. contents::
+NoseJS is a [Nose](http://www.somethingaboutorange.com/mrl/projects/nose/)
+plugin for integrating JavaScript tests into a Python test suite.
 
-This projected has been forked from the NoseJS on BitBucket at http://bitbucket.org/kumar303/nosejs
+This projected has been forked from
+[NoseJS on BitBucket](http://bitbucket.org/kumar303/nosejs).
 
-Overview
-========
+# Overview
 
-NoseJS is designed for Python projects that require JavaScript code for some Web functionality.  It currently has two features:
+NoseJS is designed for Python projects that require JavaScript code for some
+Web functionality. It currently has two features:
 
 - Discover and run JavaScript tests alongside Python tests
 - Validate JavaScript syntax (check for lint).
 
-Install
-=======
+# Install
 
 There are some optional external dependencies in the sections below.
 
-Checking JavaScript Syntax
-==========================
+#Checking JavaScript Syntax
 
 NoseJS will find JavaScript files (e.g. ``app.js``) along the Nose path and run them through the `jsl`_ command line tool to check for "lint."  In other words, show you syntax errors, warnings, etc.  You can install jsl on most systems using your package manager (i.e. ``port install javascript-lint`` on Mac OS X) otherwise it is available for download on the `jsl`_ site.  
 
 .. _jsl: http://www.javascriptlint.com/
 
-Usage
------
+## Usage
 
 To check for lint without running any JavaScript unit tests, type::
     
@@ -37,13 +36,11 @@ To check for lint without running any JavaScript unit tests, type::
 
 To disable lint checking, add ``--no-javascript-lint``
 
-Running JavaScript Tests
-========================
+# Running JavaScript Tests
 
 NoseJS will also find and run JavaScript test files, those that match Nose's test pattern and end in ``.js``.  Currently, NoseJS supports running executing tests in `Rhino`_, a Java implementation of the JavaScript language.  There is experimental support for `python-spidermonkey <http://github.com/davisp/python-spidermonkey/tree/master>`_ using the ``--spidermonkey`` switch.
 
-Usage
------
+## Usage
 
 Assuming you've downloaded `Rhino`_ into ``~/src``, discover and run JavaScript tests with this command::
     
@@ -105,15 +102,13 @@ Both Python and JavaScript tests can be run with this command::
     
 The dots are the Python tests that were run and the output below that is what Fudge's JavaScript test files printed out.  Be sure to read the Caveats section below ;)
 
-Specifying a path to JavaScript files
--------------------------------------
+## Specifying a path to JavaScript files
 
 If JavaScript files are nested in a subdirectory, like the above example, specify that directory with::
     
     $ nosetests --with-javascript --javascript-dir javascript/fudge/tests/ --javascript-dir ./another/dir
 
-nosejs JavaScript namespace
----------------------------
+## nosejs JavaScript namespace
 
 All JavaScripts have the ``nosejs`` JavaScript namespace available for use.  The following methods are available:
 
@@ -147,8 +142,7 @@ All JavaScripts have the ``nosejs`` JavaScript namespace available for use.  The
             nosejs.requireFile("../fudge.js");
         }
 
-Using the DOM
--------------
+## Using the DOM
 
 If your JavaScript under test relies on a browser-like DOM environment, it might still work!  Just run::
     
@@ -156,14 +150,12 @@ If your JavaScript under test relies on a browser-like DOM environment, it might
 
 This will load a copy of John Resig's `env.js <http://ejohn.org/projects/bringing-the-browser-to-the-server/>`_ script to simulate a DOM before loading any other JavaScript.  There are a few very minor patches made to env.js, marked with @@nosejs in the NoseJS source.
 
-Caveats
--------
+## Caveats
 
 - Currently if JavaScript tests fail, nosetests **will not** indicate failure and its exit status will be unaffected.  I can't figure out a clean way to do this.  Please get in touch if you'd like to help.  
 - In general, JavaScript tests are not very well integrated into Nose.
 
-Wait ... Python *and* Java?
----------------------------
+## Wait ... Python *and* Java?
 
 `Rhino`_ is pretty much the only stable, command line oriented implementation of JavaScript I know of and it's well supported by Mozilla.  
 
@@ -171,13 +163,22 @@ Alternatively, John J. Lee created a Python binding to the fast `Spider Monkey e
 
 There is current experimental support for Python Spidermonkey in NoseJS using the ``--spidermonkey`` option, which switches out the JavaScript engine.
 
-Contributing
-============
+# Contributing
 
 Please submit `bugs and patches <http://bitbucket.org/kumar303/nosejs/issues/>`_.  All contributors will be acknowledged.  Thanks!
 
-Changelog
-=========
+# Changelog
+
+## New changes
+
+- 0.9.5
+
+  - Upgraded [env.js](http://github.com/thatcher/env-js) to latest from @thatcher's fork
+  - Nuked Spidermonkey implementation for now
+  - Nose now sees each js test file as a python test case
+  - Failures and errors are now detected and displayed in the summary report
+
+## Prior changes
 
 - 0.9.4
  
@@ -202,8 +203,7 @@ Changelog
   
   - Initial release
 
-To Do
-=====
+# To Do
 
 - Better spidermonkey support
 - Distribute a Rhino js.jar with NoseJS
