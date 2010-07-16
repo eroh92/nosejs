@@ -41,7 +41,7 @@ NoseJS will also find and run JavaScript test files, those that match Nose's tes
 
 ## Usage
 
-Assuming you've downloaded `Rhino`_ into ``~/src``, discover and run JavaScript tests with this command::
+Assuming you've downloaded [Rhino](http://www.mozilla.org/rhino/) into `~/src`, discover and run JavaScript tests with this command::
     
     $ nosetests --with-javascript --rhino-jar ~/src/rhino1_7R1/js.jar path/to/javascript/tests
 
@@ -135,11 +135,11 @@ All JavaScripts have the ``nosejs`` JavaScript namespace available for use.  The
     
     - For example, test_fudge.js uses jquery and the testrunner ::
     
-        if (typeof nosejs !== 'undefined') {
-            nosejs.requireResource("jquery-1.3.1.js");
-            nosejs.requireResource("jquery/qunit-testrunner.js");
-            nosejs.requireFile("../fudge.js");
-        }
+            if (typeof nosejs !== 'undefined') {
+                nosejs.requireResource("jquery-1.3.1.js");
+                nosejs.requireResource("jquery/qunit-testrunner.js");
+                nosejs.requireFile("../fudge.js");
+            }
 
 ## Using the DOM
 
