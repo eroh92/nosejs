@@ -312,20 +312,3 @@ class NoseJS(Plugin):
                 return False
                 
         return found_some
-        
-#    def report(self, stream):
-#
-#        if self.options.run_javascript_tests:
-#            print >> stream, "-" * 70
-#
-#            if self.options.spidermonkey:
-#                js_test = SpidermonkeyJavaScriptTester(stream, self.options)
-#            else:
-#                js_test = RhinoJavaScriptTester(stream, self.options)
-#
-#            files = [self.options.rhino_testrunner] # the main program
-#            for js_lib in self.options.javascript_libs_to_load:
-#                files.append(js_lib)
-#            files.extend(self.files)
-#            js_test.load_files(files)
-            
