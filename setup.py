@@ -13,7 +13,7 @@ setup(
     name='NoseJS',
     version=version,
     description="A Nose plugin for integrating JavaScript tests into a Python test suite.",
-    long_description=open("README",'r').read(),
+    long_description=open("README.md",'r').read(),
     zip_safe=False,
     packages=find_packages(),
     include_package_data=True,
