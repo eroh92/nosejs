@@ -11,12 +11,13 @@ nosejs = {};
     var current_script = null;
     
     var setHtmlLocation = function(html_file) {
-        if (typeof window === 'undefined') {
-            throw new Error(
-                "Cannot load HTML file "+html_file+" because the DOM has not been initialized");
-        }
-        window.location = html_file;
+//        if (typeof window === 'undefined') {
+//            throw new Error(
+//                "Cannot load HTML file "+html_file+" because the DOM has not been initialized");
+//        }
+//        window.location = html_file;
         //print("set window.location="+html_file);
+//        Envjs(html_file)
     };
     
     var patchDom = function() {
